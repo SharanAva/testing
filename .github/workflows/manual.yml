@@ -26,19 +26,18 @@ jobs:
 import winrm
 import os
 import glob
-import shutil
 
 # Define the connection details
-host = ${{ secrets.WINDOWS_HOST }}
-username = ${{ secrets.WINDOWS_RDP_USER }}
-password = ${{ secrets.WINDOWS_RDP_PASSWORD }}
+host = os.environ['WINDOWS_HOST']
+username = os.environ['WINDOWS_RDP_USER']
+password = os.environ['WINDOWS_RDP_PASSWORD']
 
 # Create the WinRM session
 session = winrm.Session(f'http://{host}:5985/wsman', auth=(username, password))
 
 # Define the source and destination paths
 source_path = './*'  # Files in the repository directory
-destination_path = 'C:\testing'  # Change to your target directory on the Windows server
+destination_path = 'C:\\testing'  # Change to your target directory on the Windows server
 
 # Copy files to the Windows server
 for file in glob.glob(source_path):
@@ -46,3 +45,8 @@ for file in glob.glob(source_path):
 
 # Restart the IIS application pool
 session.run_cmd('powershell -Command \"Restart-WebAppPool -Name \'YourAppPoolName\'\"')
+        "
+      env:
+        WINDOWS_HOST: ${{ secrets.WINDOWS_HOST }}
+        WINDOWS_RDP_USER: ${{ secrets.WINDOWS_RDP_USER }}
+        WINDOWS_RDP_PASSWORD: ${{ secrets.WINDOWS_RDP_PASSWORD }}
