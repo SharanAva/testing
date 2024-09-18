@@ -11,19 +11,43 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Upload files to Windows Server
-      run: |
-        echo "${{ secrets.WINDOWS_RDP_PASSWORD }}" | powershell -Command "scp -o StrictHostKeyChecking=no -r ./ ${{ secrets.WINDOWS_RDP_USER }}@${{ secrets.WINDOWS_HOST }}:C:\Users\migspfs001\Desktop"
-
-    - name: Restart IIS Application Pool
-      uses: azure/powershell@v1
+    - name: Set up Python
+      uses: actions/setup-python@v4
       with:
-        inlineScript: |
-          $username = "${{ secrets.WINDOWS_RDP_USER }}"
-          $password = ConvertTo-SecureString "${{ secrets.WINDOWS_RDP_PASSWORD }}" -AsPlainText -Force
-          $cred = New-Object System.Management.Automation.PSCredential($username, $password)
-          $session = New-PSSession -ComputerName ${{ secrets.WINDOWS_HOST }} -Credential $cred
-          Invoke-Command -Session $session -ScriptBlock {
-              Restart-WebAppPool -Name "YourAppPoolName"
-          }
-          Remove-PSSession -Session $session
+        python-version: '3.x'
+
+    - name: Install pywinrm
+      run: |
+        pip install pywinrm
+
+    - name: Upload files and Restart IIS
+      run: |
+        python -c "
+import winrm
+import os
+import glob
+import shutil
+
+# Define the connection details
+host = ${{ secrets.WINDOWS_HOST }}
+username = ${{ secrets.WINDOWS_RDP_USER }}
+password = ${{ secrets.WINDOWS_RDP_PASSWORD }}
+
+# Create the WinRM session
+session = winrm.Session(f'http://{host}:5985/wsman', auth=(username, password))
+
+# Define the source and destination paths
+source_path = './*'  # Files in the repository directory
+destination_path = 'C:\testing'  # Change to your target directory on the Windows server
+
+# Copy files to the Windows server
+for file in glob.glob(source_path):
+    session.run_cmd(f'powershell -Command \"Copy-Item -Path {file} -Destination {destination_path} -Force\"')
+
+# Restart the IIS application pool
+session.run_cmd('powershell -Command \"Restart-WebAppPool -Name \'YourAppPoolName\'\"')
+      "
+      env:
+        WINDOWS_HOST: ${{ secrets.WINDOWS_HOST }}
+        WINDOWS_RDP_USER: ${{ secrets.WINDOWS_RDP_USER }}
+        WINDOWS_RDP_PASSWORD: ${{ secrets.WINDOWS_RDP_PASSWORD }}
