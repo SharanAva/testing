@@ -46,8 +46,3 @@ for file in glob.glob(source_path):
 
 # Restart the IIS application pool
 session.run_cmd('powershell -Command \"Restart-WebAppPool -Name \'YourAppPoolName\'\"')
-      "
-      env:
-        WINDOWS_HOST: ${{ secrets.WINDOWS_HOST }}
-        WINDOWS_RDP_USER: ${{ secrets.WINDOWS_RDP_USER }}
-        WINDOWS_RDP_PASSWORD: ${{ secrets.WINDOWS_RDP_PASSWORD }}
