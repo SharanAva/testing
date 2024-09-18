@@ -1,0 +1,36 @@
+name: Deploy to Windows EC2
+
+on:
+  push:
+    branches:
+      - main  # Adjust this to your default branch or other branches you want to deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Upload files to Windows Server
+      uses: appleboy/drone-scp@v1
+      with:
+        host: ${{ secrets.WINDOWS_HOST }}
+        username: ${{ secrets.WINDOWS_RDP_USER }}
+        password: ${{ secrets.WINDOWS_RDP_PASSWORD }}
+        source: "."
+        target: "C:/path/to/your/application"
+
+    - name: Restart IIS Application Pool
+      uses: azure/powershell@v1
+      with:
+        inlineScript: |
+          $username = "${{ secrets.WINDOWS_RDP_USER }}"
+          $password = ConvertTo-SecureString "${{ secrets.WINDOWS_RDP_PASSWORD }}" -AsPlainText -Force
+          $cred = New-Object System.Management.Automation.PSCredential($username, $password)
+          $session = New-PSSession -ComputerName $env:WINDOWS_HOST -Credential $cred
+          Invoke-Command -Session $session -ScriptBlock {
+              Restart-WebAppPool -Name "YourAppPoolName"
+          }
+          Remove-PSSession -Session $session
