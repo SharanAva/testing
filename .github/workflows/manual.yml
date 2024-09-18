@@ -21,7 +21,7 @@ jobs:
           env
 
       - name: Copy code to another Windows machine
-        uses: appleboy/scp-action
+        uses: appleboy/scp-action@v2
         with:
           host: ${{ secrets.WINDOWS_HOST }}
           username: ${{ secrets.WINDOWS_RDP_USER }}
