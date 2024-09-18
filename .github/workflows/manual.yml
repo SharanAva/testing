@@ -22,7 +22,7 @@ jobs:
 
       - name: Copy code to another Windows machine using PowerShell
         run: |
-          $target = "\\${{ secrets.WINDOWS_HOST }}\SharedFolder" # Update with the target shared folder path
+          $target = "\\${{ secrets.WINDOWS_HOST }}\testing" # This must be the shared folder on the target machine
           $username = "${{ secrets.WINDOWS_RDP_USER }}"
           $password = "${{ secrets.WINDOWS_RDP_PASSWORD }}"
           $secpasswd = ConvertTo-SecureString $password -AsPlainText -Force
