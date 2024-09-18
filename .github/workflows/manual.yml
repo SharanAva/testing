@@ -36,8 +36,8 @@ password = os.environ['WINDOWS_RDP_PASSWORD']
 session = winrm.Session(f'http://{host}:5985/wsman', auth=(username, password))
 
 # Define the source and destination paths
-source_path = './*'  # Files in the repository directory
-destination_path = 'C:\\testing'  # Change to your target directory on the Windows server
+source_path = './*'  # All files in the repository directory
+destination_path = 'C:\testing'  # Change to your target directory on the Windows server
 
 # Copy files to the Windows server
 for file in glob.glob(source_path):
