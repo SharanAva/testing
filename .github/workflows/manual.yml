@@ -1,52 +1,55 @@
+name: Test Runner Configuration and Deploy Code
+
+
 on:
+
   push:
+
     branches:
-      - main  # Adjust this to your default branch or other branches you want to deploy
+
+      - main
+
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+
+  test-runner:
+
+    runs-on: windows-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
+      - name: Checkout code
 
-    - name: Install pywinrm
-      run: |
-        pip install pywinrm
+        uses: actions/checkout@v3
 
-    - name: Upload files and Restart IIS
-      run: |
-        python -c "
-import winrm
-import os
-import glob
 
-# Define the connection details
-host = os.environ['WINDOWS_HOST']
-username = os.environ['WINDOWS_RDP_USER']
-password = os.environ['WINDOWS_RDP_PASSWORD']
+      - name: Check if runner is configured
 
-# Create the WinRM session
-session = winrm.Session(f'http://{host}:5985/wsman', auth=(username, password))
+        run: |
 
-# Define the source and destination paths
-source_path = './*'  # All files in the repository directory
-destination_path = 'C:\testing'  # Change to your target directory on the Windows server
+          echo "Checking if runner is configured..."
 
-# Copy files to the Windows server
-for file in glob.glob(source_path):
-    session.run_cmd(f'powershell -Command \"Copy-Item -Path {file} -Destination {destination_path} -Force\"')
+          echo "Runner OS: ${runner.os}"
 
-# Restart the IIS application pool
-session.run_cmd('powershell -Command \"Restart-WebAppPool -Name \'YourAppPoolName\'\"')
-        "
-      env:
-        WINDOWS_HOST: ${{ secrets.WINDOWS_HOST }}
-        WINDOWS_RDP_USER: ${{ secrets.WINDOWS_RDP_USER }}
-        WINDOWS_RDP_PASSWORD: ${{ secrets.WINDOWS_RDP_PASSWORD }}
+          echo "Runner architecture: ${runner.arch}"
+
+          echo "Runner environment variables:"
+
+          env
+
+
+      - name: Copy code to another Windows machine
+
+        uses: appleboy/scp-action@v1
+
+        with:
+
+          host: ${{ secrets.WINDOWS_HOST }}
+
+          username: ${{ secrets.WINDOWS_RDP_USER }}
+
+          password: ${{ secrets.WINDOWS_RDP_PASSWORD }}
+
+          source: "."
+
+          target: "C:\testing"
