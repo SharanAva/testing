@@ -1,55 +1,30 @@
 name: Test Runner Configuration and Deploy Code
 
-
 on:
-
   push:
-
     branches:
-
       - main
 
-
 jobs:
-
   test-runner:
-
     runs-on: windows-latest
-
     steps:
-
       - name: Checkout code
-
         uses: actions/checkout@v3
 
-
       - name: Check if runner is configured
-
         run: |
-
           echo "Checking if runner is configured..."
-
           echo "Runner OS: ${runner.os}"
-
           echo "Runner architecture: ${runner.arch}"
-
           echo "Runner environment variables:"
-
           env
 
-
       - name: Copy code to another Windows machine
-
         uses: appleboy/scp-action@v1
-
         with:
-
           host: ${{ secrets.WINDOWS_HOST }}
-
           username: ${{ secrets.WINDOWS_RDP_USER }}
-
           password: ${{ secrets.WINDOWS_RDP_PASSWORD }}
-
           source: "."
-
-          target: "C:\testing"
+          target: "C:\\testing"
