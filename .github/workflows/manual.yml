@@ -20,11 +20,20 @@ jobs:
           echo "Runner environment variables:"
           env
 
-      - name: Copy code to another Windows machine
-        uses: appleboy/scp-action@v2
-        with:
-          host: ${{ secrets.WINDOWS_HOST }}
-          username: ${{ secrets.WINDOWS_RDP_USER }}
-          password: ${{ secrets.WINDOWS_RDP_PASSWORD }}
-          source: "."
-          target: "C:\\testing"
+      - name: Copy code to another Windows machine using PowerShell
+        run: |
+          $target = "\\${{ secrets.WINDOWS_HOST }}\SharedFolder" # Update with the target shared folder path
+          $username = "${{ secrets.WINDOWS_RDP_USER }}"
+          $password = "${{ secrets.WINDOWS_RDP_PASSWORD }}"
+          $secpasswd = ConvertTo-SecureString $password -AsPlainText -Force
+          $credentials = New-Object System.Management.Automation.PSCredential ($username, $secpasswd)
+          
+          # Map network drive
+          New-PSDrive -Name Z -PSProvider FileSystem -Root $target -Credential $credentials -Persist
+          
+          # Copy files to target machine
+          Copy-Item -Path "." -Destination "Z:\testing" -Recurse -Force
+          
+          # Remove network drive
+          Remove-PSDrive -Name Z
+        shell: pwsh
