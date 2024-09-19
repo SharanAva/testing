@@ -1,18 +1,12 @@
-name: Test Runner Configuration
+name: 2-minute Workflow
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
-  test-runner:
-    runs-on: windows-latest
+  wait-for-2-mins:
+    runs-on: ubuntu-latest
     steps:
-      - name: Check if runner is configured
+      - name: Wait for 2 minutes
         run: |
-          echo "Checking if runner is configured..."
-          echo "Runner OS: ${runner.os}"
-          echo "Runner architecture: ${runner.arch}"
-          echo "Runner environment variables:"
-          env
+          sleep 120s
