@@ -1,4 +1,4 @@
-name: 2-minute Workflow
+name: deploy
 
 on:
   workflow_dispatch:
